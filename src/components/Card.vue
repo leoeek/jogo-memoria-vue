@@ -8,7 +8,9 @@
             v-on:click="vira(foto)"
         >
             <img :src="foto.status ? foto.url : cartaVirada" />
-        </div>    
+        </div>  
+
+        <p id="status" :class="classErro">{{msg}}</p>
     </div>
 </template>
 
@@ -22,9 +24,12 @@ export default {
     data() {
         return {
             jogadas: 0,
+            msg: '',
+            status: '',
+            classErro: '',
             cartaCompara: false,
             fotosJogo: [],
-            cartaVirada: 'https://cdn.paciencia.co/artwork-v133/cardbacks1/back32.png',
+            cartaVirada: 'https://i.pinimg.com/originals/54/35/cc/5435ccc1114ea5d757d86e301504d871.png',
             fotos: [
                 { 
                 "key": 1,
@@ -97,19 +102,22 @@ export default {
 
     created() {
         const getRandom = (min, max) => {
-            return Math.floor(Math.random() * (max - min + 1)) + min
+            return Math.floor(Math.random() * (max - min + 1)) + min 
         }
         
         const totalFotos = this.fotos.length - 1
-        let item, novo1, novo2
+        let item, carta, cartaIgual
         let montagem = []
-        while (montagem.length < this.cartas) {
+        let i = 1
+        while (i <= this.cartas) {
             item = getRandom(0, totalFotos)
             if (!montagem.find(el => el.key != undefined && el.key == this.fotos[item].key)) {
-                novo1 = { ...this.fotos[item], uid: `1_${this.fotos[item].key}` }
-                novo2 = { ...this.fotos[item], uid: `2_${this.fotos[item].key}` }
-                montagem.push(novo1)
-                montagem.push(novo2)
+                carta      = { ...this.fotos[item], uid: `1_${this.fotos[item].key}` }
+                cartaIgual = { ...this.fotos[item], uid: `2_${this.fotos[item].key}` }
+                montagem.push(carta)
+                montagem.push(cartaIgual)
+
+                i++;
             }
         }
         this.fotosJogo = montagem.sort(() => .5 - Math.random())
@@ -117,36 +125,51 @@ export default {
 
     methods: {
         vira: function(foto) {
+
+            //Primeira jogada
             if (this.jogadas === 0) {
-                foto.status = !foto.status
+                foto.status       = !foto.status
                 this.cartaCompara = foto.uid
-                console.log('vai iniciar')
 
                 this.jogadas++;
             }
+            //Segunda jogada
             else if (this.jogadas === 1 && foto.status === false) {
                 foto.status = !foto.status
-                console.log('aqui', this.cartaCompara.substr(2) )
+                //Verifica se a segunda carta em o mesmo id da primeira
                 if (this.cartaCompara.substr(2) == foto.key) {
                     this.jogadas = 0
-                    console.log('boa')
                     return
                 }
+                //Segunda carta errada
                 else {
+                    this.status   = 'erro'
                     setTimeout(() => {
                         const cartaPrimeiro = this.fotosJogo.findIndex(el => el.uid == this.cartaCompara)
                         this.fotosJogo[cartaPrimeiro].status = false
+                        this.status   = '';
                         foto.status = false
-                    }, 500)
+                    }, 700)
 
-                    console.log('perdeu')
                     this.jogadas = 0
                     return
                 }
             }
+        }
+    },
+
+    watch: {
+        status(i) {
+            this.classErro = ''
+            if (i == 'erro') {
+                this.msg = 'Ops! Tente novamente!'
+                this.classErro = 'erro'
+            }
+            else if (i == 'acerto') {                
+                this.msg = 'Você acertou! Excelente!'
+            }
             else {
-                this.jogadas = 0;
-                return
+                this.msg = ''    
             }
         }
     }
@@ -167,7 +190,6 @@ export default {
     margin: 20px;
     display: inline-flex;
     cursor: pointer;
-    /* border: 8px solid #c1c1c1; */
     -webkit-box-shadow: 1px 0px 9px 0px rgba(50, 50, 50, 0.75);
     -moz-box-shadow:    1px 0px 9px 0px rgba(50, 50, 50, 0.75);
     box-shadow:         1px 0px 9px 0px rgba(50, 50, 50, 0.75);
@@ -190,5 +212,13 @@ export default {
 .card img {
     width: 100%;
     height: 100%;
+}
+#status {
+    font-size: 2.4rem;
+    font-weight: bold;
+    margin-top: 70px;
+}
+.erro {
+    color: red;
 }
 </style>
