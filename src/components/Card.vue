@@ -11,7 +11,7 @@
         </div>
 
         <p id="status" :class="classErro">{{msg}}</p>
-        <p>{{jogadas}} - {{logstatus}}</p>
+        <p>{{jogadas}} - {{logstatus}} | liberado {{liberadoJogada}}</p>
     </div>
 </template>
 
@@ -32,6 +32,7 @@ export default {
             cartaCompara: false,
             fotosJogo: [],
             cartaVirada: '/static/carta-virada.png',
+            liberadoJogada: true,
             fotos: [
                 {
                 "key": 1,
@@ -128,22 +129,31 @@ export default {
     methods: {
         vira: function(foto) {
 
-            this.logstatus    = false
+            if (this.jogadas > 1) return;
+
+            this.logstatus      = false
+            this.liberadoJogada = false
 
             //Primeira jogada
             if (this.jogadas === 0) {
-                foto.status       = !foto.status
-                this.cartaCompara = foto.uid
+                foto.status         = !foto.status
+                this.cartaCompara   = foto.uid
+                this.status         = 'inicio'
 
                 this.jogadas++;
             }
             //Segunda jogada
             else if (this.jogadas === 1 && foto.status === false) {
                 foto.status = !foto.status
+
                 //Verifica se a segunda carta em o mesmo id da primeira
                 if (this.cartaCompara.substr(2) == foto.key) {
                     this.logstatus    = true
-                    this.jogadas = 0
+                    setTimeout(() => {
+                        this.status   = 'acerto';
+                        foto.status = false
+                        this.jogadas = 0
+                    }, 700)
                     return
                 }
                 //Segunda carta errada
@@ -154,9 +164,9 @@ export default {
                         this.fotosJogo[cartaPrimeiro].status = false
                         this.status   = '';
                         foto.status = false
+                        this.jogadas = 0
                     }, 700)
 
-                    this.jogadas = 0
                     return
                 }
             }
@@ -165,6 +175,7 @@ export default {
 
     watch: {
         status(i) {
+            console.log('dentro do i', i)
             this.classErro = ''
             if (i == 'erro') {
                 this.msg = 'Ops! Tente novamente!'
@@ -176,6 +187,7 @@ export default {
             else {
                 this.msg = ''
             }
+            this.liberadoJogada = true
         }
     }
 }
