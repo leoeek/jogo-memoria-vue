@@ -34,7 +34,7 @@ body {
 #app {
   height: 100%;
   width: 100%;
-  background: url(https://png.pngtree.com/thumb_back/fw800/back_pic/04/37/34/12584ab86297832.jpg) no-repeat;
+  background: url(/static/background.jpg) no-repeat;
   background-size: 100% 100%;
 }
 
